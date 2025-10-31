@@ -1,109 +1,252 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Form Registrasi Badan Usaha</title>
-
-    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- React + Babel -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    
+    <!-- Memuat Babel Standalone untuk transpilasi JSX & TS di browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Memperbarui importmap untuk menggunakan React 18 dari CDN yang stabil -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
   </head>
-
-  <body class="bg-gray-100">
+  <body>
     <div id="root"></div>
+    
+    <!-- Semua kode JavaScript, TypeScript, dan React digabungkan di sini -->
+    <script type="text/babel" data-type="module">
+      import React, { useState } from 'react';
+      import ReactDOM from 'react-dom/client';
 
-    <script type="text/babel">
-      function App() {
+      // --- Konten dari constants.ts ---
+      const SERVICE_OPTIONS = [
+        "Pendirian PT Biasa",
+        "Pendirian PT Perorangan",
+        "Pendirian CV",
+        "Pendirian Yayasan",
+        "Pendirian Perkumpulan",
+        "Pendirian Partai",
+        "Pendirian Kelompok Tani",
+      ];
+      const WHATSAPP_TARGET_NUMBER = "6281395265854";
+
+      // --- Konten dari types.ts ---
+      // (Interface untuk type checking saat development)
+      interface FormData {
+        name: string;
+        address: string;
+        whatsappNumber: string;
+        email: string;
+        service: string;
+      }
+
+      // --- Konten dari App.tsx ---
+      const App = () => {
+        const [formData, setFormData] = useState({
+          name: '',
+          address: '',
+          whatsappNumber: '',
+          email: '',
+          service: SERVICE_OPTIONS[0],
+        });
+        const [error, setError] = useState(null);
+
+        const handleInputChange = (e) => {
+          const { name, value } = e.target;
+          setFormData(prevData => ({
+            ...prevData,
+            [name]: value,
+          }));
+        };
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          setError(null);
+
+          // Validasi dasar
+          if (!formData.name.trim() || !formData.address.trim() || !formData.whatsappNumber.trim() || !formData.email.trim()) {
+            setError('Harap isi semua kolom yang wajib diisi.');
+            return;
+          }
+
+          if (!/^\d{10,15}$/.test(formData.whatsappNumber)) {
+              setError('Format nomor WhatsApp tidak valid. Harap masukkan hanya angka, 10-15 digit.');
+              return;
+          }
+
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+              setError('Format alamat email tidak valid.');
+              return;
+          }
+
+          const message = `
+*Form Pendaftaran Badan Usaha*
+
+*Nama Lengkap:*
+${formData.name}
+
+*Alamat Lengkap:*
+${formData.address}
+
+*Nomor WhatsApp Aktif:*
+${formData.whatsappNumber}
+
+*Alamat Email:*
+${formData.email}
+
+*Jenis Layanan:*
+${formData.service}
+          `.trim();
+
+          const encodedMessage = encodeURIComponent(message);
+          const whatsappUrl = `https://wa.me/${WHATSAPP_TARGET_NUMBER}?text=${encodedMessage}`;
+
+          // Buka di tab baru untuk menghindari masalah "refused to connect"
+          window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        };
+
         return (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-              <h1 className="text-2xl font-bold text-blue-600 text-center mb-6">
-                Form Registrasi Badan Usaha
-              </h1>
+          <main className="bg-gradient-to-br from-rose-950 via-slate-900 to-slate-900 min-h-screen w-full flex items-center justify-center p-4 font-sans">
+            <div className="w-full max-w-2xl bg-slate-800/60 backdrop-blur-xl border border-slate-700 rounded-2xl shadow-2xl shadow-pink-500/20 p-6 md:p-10 space-y-8">
+              <div className="text-center">
+                <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Form Registrasi</h1>
+                <p className="text-slate-400 mt-2">Isi data di bawah ini untuk memulai proses pendirian badan usaha Anda.</p>
+              </div>
 
-              <form className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Input Nama */}
                 <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Nama Usaha
+                  <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
+                    Nama Lengkap
                   </label>
                   <input
                     type="text"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Masukkan nama usaha"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Contoh: Budi Santoso"
+                    className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
                     required
                   />
                 </div>
 
+                {/* Input Alamat */}
                 <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Alamat Usaha
+                  <label htmlFor="address" className="block text-sm font-medium text-slate-300 mb-2">
+                    Alamat Lengkap
                   </label>
                   <textarea
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Masukkan alamat lengkap"
+                    id="address"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    rows={4}
+                    placeholder="Contoh: Jl. Merdeka No. 10, Jakarta Pusat, DKI Jakarta, 10110"
+                    className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
                     required
-                  ></textarea>
+                  />
                 </div>
 
+                {/* Input Nomor WhatsApp */}
                 <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Nomor Telepon
+                  <label htmlFor="whatsappNumber" className="block text-sm font-medium text-slate-300 mb-2">
+                    Nomor WhatsApp Aktif
                   </label>
                   <input
                     type="tel"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="08123456789"
+                    id="whatsappNumber"
+                    name="whatsappNumber"
+                    value={formData.whatsappNumber}
+                    onChange={handleInputChange}
+                    placeholder="Contoh: 081234567890"
+                    className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
                     required
                   />
                 </div>
 
+                {/* Input Email */}
                 <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Email
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+                    Alamat Email
                   </label>
                   <input
                     type="email"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="email@contoh.com"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Contoh: budi.santoso@example.com"
+                    className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
                     required
                   />
                 </div>
 
+                {/* Pilihan Layanan */}
                 <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Jenis Badan Usaha
+                  <label htmlFor="service" className="block text-sm font-medium text-slate-300 mb-2">
+                    Pilih Layanan
                   </label>
                   <select
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
+                    id="service"
+                    name="service"
+                    value={formData.service}
+                    onChange={handleInputChange}
+                    className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
                   >
-                    <option value="">-- Pilih Jenis --</option>
-                    <option value="PT">PT (Perseroan Terbatas)</option>
-                    <option value="CV">CV (Commanditaire Vennootschap)</option>
-                    <option value="UD">UD (Usaha Dagang)</option>
-                    <option value="Koperasi">Koperasi</option>
+                    {SERVICE_OPTIONS.map(option => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition"
-                >
-                  Daftar Sekarang
-                </button>
+                {error && (
+                  <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-center">
+                    {error}
+                  </div>
+                )}
+
+                {/* Tombol Kirim */}
+                <div>
+                  <button
+                    type="submit"
+                    className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-pink-500/50 transform hover:-translate-y-0.5 transition duration-300 ease-in-out shadow-lg shadow-pink-500/20"
+                  >
+                    Kirim Form via WhatsApp
+                  </button>
+                </div>
               </form>
             </div>
-          </div>
+          </main>
         );
+      };
+
+      // --- Konten dari index.tsx ---
+      const rootElement = document.getElementById('root');
+      if (!rootElement) {
+        throw new Error("Could not find root element to mount to");
       }
 
-      const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(<App />);
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      );
     </script>
   </body>
 </html>
