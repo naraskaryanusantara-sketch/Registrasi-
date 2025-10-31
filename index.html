@@ -2,37 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Form Registrasi Badan Usaha</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@19.2.0",
-        "react-dom": "https://esm.sh/react-dom@19.2.0"
-      }
-    }
-    </script>
+    <!-- React CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   </head>
 
   <body>
     <div id="root"></div>
 
-    <!-- Tambahkan data-presets agar Babel paham TSX -->
-    <script type="text/babel" data-type="module" data-presets="typescript,react">
-      import React from "react";
-      import ReactDOM from "react-dom/client";
-
-      function App() {
-        return <h1 className="text-2xl text-blue-600 text-center mt-10">Hello React + Tailwind!</h1>;
-      }
-
+    <script>
       const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(<App />);
+      root.render(
+        React.createElement(
+          "h1",
+          { className: "text-2xl text-blue-600 text-center mt-10" },
+          "Hello React + Tailwind!"
+        )
+      );
     </script>
   </body>
 </html>
